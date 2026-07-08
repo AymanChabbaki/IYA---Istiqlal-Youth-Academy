@@ -1,0 +1,298 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system: Istiqlal Youth Academy.
+   Dark is the flagship look (black + magenta glow, matching the IG poster language);
+   light is a clean editorial variant. All colors MUST be HSL. */
+
+@layer base {
+  /* Light mode */
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 0 0% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 328 90% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 340 45% 95%;
+    --secondary-foreground: 328 60% 25%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 42%;
+
+    --accent: 340 65% 90%;
+    --accent-foreground: 328 65% 25%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --ring: 328 90% 52%;
+
+    --radius: 1rem;
+
+    --success: 142 71% 40%;
+    --warning: 38 92% 48%;
+    --info: 199 89% 45%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(328 90% 52%), hsl(340 80% 62%));
+    --gradient-accent: linear-gradient(135deg, hsl(328 90% 52%), hsl(300 60% 42%));
+    /* Theme-aware hero wash. Hero copy must use theme tokens (text-foreground /
+       text-muted-foreground), NEVER hardcoded text-white, or it breaks in light mode. */
+    --gradient-hero: radial-gradient(ellipse 90% 70% at 70% -10%, hsl(328 90% 60% / 0.16), transparent 60%),
+                     radial-gradient(ellipse 80% 60% at 20% 110%, hsl(300 80% 55% / 0.12), transparent 65%),
+                     linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(340 30% 97%) 100%);
+
+    --shadow-glow: 0 0 60px hsl(328 90% 52% / 0.25);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.07);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Dark mode: flagship */
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 328 100% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 330 30% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 64%;
+
+    --accent: 340 80% 70%;
+    --accent-foreground: 0 0% 8%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 328 100% 58%;
+
+    --success: 142 65% 45%;
+    --warning: 38 92% 55%;
+    --info: 199 89% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(328 100% 58%), hsl(340 85% 68%));
+    --gradient-accent: linear-gradient(135deg, hsl(328 100% 58%), hsl(300 70% 45%));
+    --gradient-hero: radial-gradient(ellipse 90% 70% at 70% -10%, hsl(328 90% 40% / 0.35), transparent 60%),
+                     radial-gradient(ellipse 80% 60% at 20% 110%, hsl(300 80% 35% / 0.30), transparent 65%),
+                     linear-gradient(180deg, hsl(0 0% 3%) 0%, hsl(0 0% 6%) 100%);
+
+    --shadow-glow: 0 0 70px hsl(328 100% 58% / 0.4);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.55);
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+
+  ::selection {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.35);
+    border-radius: 999px;
+    border: 2px solid hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.6);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-xl bg-card/70 border border-border/60;
+  }
+
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glow-border {
+    border: 1px solid hsl(var(--primary) / 0.35);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Film-grain overlay. Parent needs `relative`; sits above bg, below content */
+  .noise::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Outlined display type: hero watermarks and oversized numerals */
+  .text-outline {
+    -webkit-text-stroke: 1.5px hsl(var(--foreground) / 0.22);
+    color: transparent;
+  }
+
+  .section-label {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary;
+  }
+  .section-label::before {
+    content: "";
+    @apply block h-px w-8 bg-primary;
+  }
+
+  /* Animated underline for nav links */
+  .link-underline {
+    @apply relative;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute left-0 -bottom-1 h-[2px] w-0 bg-primary transition-all duration-300;
+  }
+  .link-underline:hover::after,
+  .link-underline[data-active="true"]::after {
+    @apply w-full;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 32s linear infinite;
+  }
+  .animate-marquee-slow {
+    animation: marquee 60s linear infinite;
+  }
+  .marquee-paused:hover .animate-marquee,
+  .marquee-paused:hover .animate-marquee-slow {
+    animation-play-state: paused;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee,
+    .animate-marquee-slow,
+    .animate-float,
+    .animate-slide-up {
+      animation: none;
+    }
+  }
+}
+
+/* iOS Safari: 100vh includes the browser chrome (address bar), causing content
+   to overflow. Use 100dvh (dynamic viewport height) when supported (iOS 15.4+).
+   This prevents blank areas / clipped layouts on iPhone. */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+  .h-screen {
+    height: 100dvh;
+  }
+}
+
+/* iOS Safari -webkit-fill-available fallback for older iOS */
+@supports not (height: 100dvh) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}

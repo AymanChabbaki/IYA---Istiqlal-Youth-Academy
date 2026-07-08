@@ -1,0 +1,62 @@
+import { Router } from 'express';
+import {
+  getAllEvents,
+  getEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  registerForEvent,
+  registerAsGuest,
+  checkIn,
+  checkInByToken,
+  getEventRegistrations,
+  exportRegistrations,
+  getMyRegistrations,
+  getPendingRegistrations,
+  approveRegistration,
+  rejectRegistration,
+  deleteRegistration,
+  downloadBadge,
+  checkInSubEvent
+} from '../controllers/event.controller';
+import { authenticate, authorize } from '../middleware/auth';
+import { upload } from '../middleware/upload';
+
+const router = Router();
+
+// Public routes
+router.get('/', getAllEvents);
+
+// Protected routes - specific routes before parameterized routes
+router.get('/user/registrations', authenticate, getMyRegistrations);
+router.post('/upload-image', authenticate, authorize('STAFF', 'ADMIN'), upload.single('image'), async (req: any, res: any) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const imageUrl = (req.file as any).path || `/uploads/${req.file.filename}`;
+    res.json({ success: true, data: { imageUrl } });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to upload image' });
+  }
+});
+router.get('/registrations/pending', authenticate, authorize('STAFF', 'ADMIN'), getPendingRegistrations);
+router.post('/registrations/check-in', authenticate, authorize('STAFF', 'ADMIN'), checkInByToken);
+router.post('/registrations/sub-events/check-in', authenticate, authorize('STAFF', 'ADMIN'), checkInSubEvent);
+router.get('/registrations/:id/badge', downloadBadge);
+router.put('/registrations/:id/approve', authenticate, authorize('STAFF', 'ADMIN'), approveRegistration);
+router.put('/registrations/:id/reject', authenticate, authorize('STAFF', 'ADMIN'), rejectRegistration);
+router.delete('/registrations/:id', authenticate, authorize('STAFF', 'ADMIN'), deleteRegistration);
+
+// Parameterized routes - must come after specific routes
+router.get('/:id', getEventById);
+router.post('/', authenticate, authorize('STAFF', 'ADMIN'), createEvent);
+router.put('/:id', authenticate, authorize('STAFF', 'ADMIN'), updateEvent);
+router.delete('/:id', authenticate, authorize('STAFF', 'ADMIN'), deleteEvent);
+router.post('/:id/register', authenticate, registerForEvent);
+router.post('/:id/register-guest', registerAsGuest); // Public, no auth required
+router.post('/:id/checkin', authenticate, authorize('STAFF', 'ADMIN'), checkIn);
+router.get('/:id/registrations', authenticate, authorize('STAFF', 'ADMIN'), getEventRegistrations);
+router.get('/:id/registrations/export', authenticate, authorize('STAFF', 'ADMIN'), exportRegistrations);
+
+export default router;

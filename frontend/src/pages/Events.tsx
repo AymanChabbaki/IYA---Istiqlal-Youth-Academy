@@ -1,0 +1,361 @@
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { EventCard } from '@/components/EventCard';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Footer } from '@/components/Footer';
+import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
+import { eventService } from '@/services/event.service';
+import { Link } from 'react-router-dom';
+import { 
+  Search, Calendar, Filter, Sparkles, TrendingUp, 
+  MapPin, Users, Clock, Tag, ArrowRight, Zap,
+  Code2, Brain, Rocket
+} from 'lucide-react';
+
+const Events = () => {
+  const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 300], [0, -50]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('upcoming');
+  const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set());
+
+  const categories = ['all', 'workshop', 'hackathon', 'conference', 'meetup', 'webinar'];
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserRegistrations();
+    }
+  }, [isAuthenticated]);
+
+  const fetchUserRegistrations = async () => {
+    try {
+      const response = await eventService.getMyRegistrations();
+      const registeredEventIds = new Set<string>(
+        response.data.map((reg: any) => reg.eventId)
+      );
+      setUserRegistrations(registeredEventIds);
+    } catch (error) {
+      console.error('Error fetching user registrations:', error);
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await eventService.getAllEvents();
+      const eventsData = response.data || [];
+      
+      // Check and update event status based on dates
+      const now = new Date();
+      const updatedEventsData = eventsData.map((event: any) => {
+        // Don't change CANCELLED status
+        if (event.status === 'CANCELLED') {
+          return event;
+        }
+        
+        const startDate = new Date(event.startAt);
+        const endDate = new Date(event.endAt);
+        
+        let newStatus = event.status;
+        if (now < startDate) {
+          newStatus = 'UPCOMING';
+        } else if (now >= startDate && now < endDate) {
+          newStatus = 'ONGOING';
+        } else if (now >= endDate) {
+          newStatus = 'COMPLETED';
+        }
+        
+        return { ...event, status: newStatus };
+      });
+      
+      // Map events to EventCard format
+      const mappedEvents = updatedEventsData.map((event: any) => ({
+        ...event,
+        date: event.startAt,
+        location: event.locationText,
+        image: event.imageUrl || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
+        registrations: event._count?.registrations || 0,
+      }));
+      
+      setEvents(mappedEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch = 
+      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (event.locationText || event.location || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = 
+      selectedCategory === 'all' || 
+      event.category?.toLowerCase() === selectedCategory.toLowerCase();
+    
+    const now = new Date();
+    const eventDate = new Date(event.startAt || event.date);
+    const matchesFilter = 
+      (activeFilter === 'upcoming' && eventDate >= now) ||
+      (activeFilter === 'past' && eventDate < now) ||
+      activeFilter === 'all';
+    
+    return matchesSearch && matchesCategory && matchesFilter;
+  });
+
+  const stats = [
+    { label: 'Total Events', value: events.length, icon: Calendar },
+    { label: 'Upcoming', value: events.filter(e => new Date(e.startAt || e.date) >= new Date()).length, icon: TrendingUp },
+    { label: 'Categories', value: new Set(events.map(e => e.category).filter(Boolean)).size, icon: Tag },
+    { label: 'Total Registrations', value: events.reduce((acc, e) => acc + (e.registrations || 0), 0), icon: Users },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <div className="container mx-auto px-4 relative z-10 pt-40 pb-16 md:pt-48 md:pb-20">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="section-label mb-6"
+          >
+            Programme
+          </motion.p>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
+            <motion.h1
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="font-display font-black uppercase text-foreground leading-[0.9] tracking-tight text-6xl md:text-8xl"
+            >
+              The<br />
+              <span className="gradient-text">Events</span>
+            </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="max-w-md"
+            >
+              <p dir="rtl" className="font-display font-bold text-xl text-muted-foreground/70 mb-3">
+                ورشات، ندوات، ولقاءات
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Workshops, debates, and civic programs. Find your next one and register in two clicks.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="max-w-2xl relative"
+          >
+            <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+            <Input
+              type="text"
+              placeholder="Search events by title, description, or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-13 pr-4 h-14 text-base rounded-full border-border bg-card/80 backdrop-blur pl-12"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-12 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+              >
+                <Card className="p-6 text-center shadow-card hover:shadow-glow transition-all">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    <stat.icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+                  </motion.div>
+                  <div className="text-3xl font-bold mb-1">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Filters Section */}
+      <section className="py-5 sticky top-[4.5rem] z-20 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            {/* Filter Tabs */}
+            <div className="flex gap-2 flex-wrap justify-center lg:justify-start">
+              {['upcoming', 'past', 'all'].map((filter) => (
+                <Button
+                  key={filter}
+                  variant={activeFilter === filter ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveFilter(filter)}
+                  className="capitalize"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  {filter}
+                </Button>
+              ))}
+            </div>
+
+            {/* Category Filters */}
+            <div className="flex gap-2 flex-wrap justify-center lg:justify-end">
+              {categories.map((category) => (
+                <motion.div key={category} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Badge
+                    variant={selectedCategory === category ? 'default' : 'outline'}
+                    className="cursor-pointer px-4 py-2 text-sm capitalize"
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </Badge>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Events Grid */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="p-6 animate-pulse">
+                  <div className="h-48 bg-muted rounded-lg mb-4" />
+                  <div className="h-4 bg-muted rounded mb-2" />
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                </Card>
+              ))}
+            </div>
+          ) : filteredEvents.length > 0 ? (
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 text-center"
+              >
+                <p className="text-lg text-muted-foreground">
+                  Showing <span className="font-bold text-primary">{filteredEvents.length}</span> event{filteredEvents.length !== 1 ? 's' : ''}
+                </p>
+              </motion.div>
+
+              <AnimatePresence mode="popLayout">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredEvents.map((event, index) => (
+                    <motion.div
+                      key={event.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ delay: index * 0.05 }}
+                      whileHover={{ y: -10 }}
+                    >
+                      <EventCard 
+                        {...event} 
+                        isRegistered={userRegistrations.has(event.id)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </AnimatePresence>
+            </>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20"
+            >
+              <Card className="p-12 max-w-md mx-auto">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Calendar className="h-20 w-20 mx-auto text-muted-foreground mb-6" />
+                </motion.div>
+                <h3 className="text-2xl font-bold mb-2">No Events Found</h3>
+                <p className="text-muted-foreground mb-6">
+                  Try adjusting your search or filters to find what you're looking for
+                </p>
+                <Button onClick={() => { setSearchTerm(''); setSelectedCategory('all'); setActiveFilter('upcoming'); }}>
+                  Clear Filters
+                </Button>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-muted">
+        <div className="container mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="max-w-3xl mx-auto"
+          >
+            <motion.div
+              animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <Zap className="h-16 w-16 mx-auto mb-6" />
+            </motion.div>
+            <h2 className="text-5xl font-bold mb-6">
+              Want to Organize an Event?
+            </h2>
+            <p className="text-xl mb-8 text-muted-foreground">
+              Become an organizer and share your knowledge with our community
+            </p>
+            <Button asChild size="lg" className="text-lg gradient-accent group">
+              <Link to="/contact">
+                Get in Touch
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Events;

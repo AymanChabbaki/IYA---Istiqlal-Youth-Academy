@@ -1,0 +1,335 @@
+import { Request, Response } from 'express';
+import { asyncHandler } from '../middleware/errorHandler';
+import { AuthRequest } from '../middleware/auth';
+import prisma from '../lib/prisma';
+import { sendEmail } from '../services/email.service';
+
+// Get all users for selection
+export const getUsers = asyncHandler(async (req: Request, res: Response) => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      displayName: true,
+      email: true,
+      role: true,
+      photoUrl: true,
+    },
+    orderBy: {
+      displayName: 'asc',
+    },
+  });
+
+  res.json({ success: true, data: users });
+});
+
+// Get events with registered users count
+export const getEventsWithUsers = asyncHandler(async (req: Request, res: Response) => {
+  const events = await prisma.event.findMany({
+    select: {
+      id: true,
+      title: true,
+      startAt: true,
+      _count: {
+        select: {
+          registrations: true,
+        },
+      },
+    },
+    orderBy: {
+      startAt: 'desc',
+    },
+  });
+
+  res.json({ success: true, data: events });
+});
+
+// Get users registered for a specific event
+export const getEventUsers = asyncHandler(async (req: Request, res: Response) => {
+  const { eventId } = req.params;
+
+  const registrations = await prisma.registration.findMany({
+    where: {
+      eventId,
+      status: {
+        in: ['APPROVED', 'REGISTERED'],
+      },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          displayName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  const users = registrations.map((reg) => reg.user);
+
+  res.json({ success: true, data: users });
+});
+
+// Send email to selected users
+export const sendMessageToUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { subject, message, recipientType, userIds, eventId, attachments } = req.body;
+  const senderUser = req.user!;
+
+  if (!subject || !message) {
+    return res.status(400).json({
+      success: false,
+      error: 'Subject and message are required',
+    });
+  }
+
+  let recipients: Array<{ email: string; displayName: string }> = [];
+
+  // Get recipients based on type
+  if (recipientType === 'all') {
+    // Send to all users
+    const users = await prisma.user.findMany({
+      select: {
+        email: true,
+        displayName: true,
+      },
+    });
+    recipients = users;
+  } else if (recipientType === 'users') {
+    // Send to users only (exclude staff and admin)
+    const users = await prisma.user.findMany({
+      where: {
+        role: 'USER',
+      },
+      select: {
+        email: true,
+        displayName: true,
+      },
+    });
+    recipients = users;
+  } else if (recipientType === 'staff') {
+    // Send to staff and admin only
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ['STAFF', 'ADMIN'],
+        },
+      },
+      select: {
+        email: true,
+        displayName: true,
+      },
+    });
+    recipients = users;
+  } else if (recipientType === 'specific' && userIds && userIds.length > 0) {
+    // Send to specific users
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          in: userIds,
+        },
+      },
+      select: {
+        email: true,
+        displayName: true,
+      },
+    });
+    recipients = users;
+  } else if (recipientType === 'event' && eventId) {
+    // Send to event registrants
+    const registrations = await prisma.registration.findMany({
+      where: {
+        eventId,
+        status: {
+          in: ['APPROVED', 'REGISTERED'],
+        },
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            displayName: true,
+          },
+        },
+      },
+    });
+    recipients = registrations.map((reg) => reg.user);
+  } else {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid recipient configuration',
+    });
+  }
+
+  if (recipients.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'No recipients found',
+    });
+  }
+
+  // Function to replace variables in message
+  const replaceVariables = (text: string, recipient: { email: string; displayName: string }) => {
+    return text
+      .replace(/{{name}}/g, recipient.displayName)
+      .replace(/{{email}}/g, recipient.email);
+  };
+
+  // Helper function to send emails in batches to avoid rate limits
+  const sendEmailsInBatches = async (recipients: Array<{ email: string; displayName: string }>, batchSize: number = 10, delayMs: number = 1000) => {
+    let successCount = 0;
+    let failureCount = 0;
+
+    for (let i = 0; i < recipients.length; i += batchSize) {
+      const batch = recipients.slice(i, i + batchSize);
+      
+      const batchPromises = batch.map(async (recipient) => {
+        const personalizedSubject = replaceVariables(subject, recipient);
+        const personalizedMessage = replaceVariables(message, recipient);
+        
+        // Check if this is a quiz notification (contains "quiz" in subject)
+        const isQuizNotification = subject.toLowerCase().includes('quiz');
+        const isEventNotification = subject.toLowerCase().includes('event');
+        const isPollNotification = subject.toLowerCase().includes('poll');
+        const isFormNotification = subject.toLowerCase().includes('form');
+        
+        let buttonHtml = '';
+        if (isQuizNotification) {
+          buttonHtml = `
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/quizzes" 
+                 style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                🎯 Take Quiz Now
+              </a>
+            </div>
+          `;
+        } else if (isEventNotification) {
+          buttonHtml = `
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events" 
+                 style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📅 View Event Details
+              </a>
+            </div>
+          `;
+        } else if (isPollNotification) {
+          buttonHtml = `
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/polls" 
+                 style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📊 Vote Now
+              </a>
+            </div>
+          `;
+        } else if (isFormNotification) {
+          buttonHtml = `
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" 
+                 style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📝 Fill Form
+              </a>
+            </div>
+          `;
+        }
+        
+        try {
+          // If attachments were provided, include them in the mail options
+          const mailAttachments = Array.isArray(attachments)
+            ? attachments.map((a: any) => ({ filename: a.filename || a.path.split('/').pop(), path: a.path, contentType: a.contentType }))
+            : undefined;
+
+          // Build attachments HTML links if present
+          let attachmentsHtml = '';
+          if (mailAttachments && mailAttachments.length > 0) {
+            attachmentsHtml = `
+              <div style="margin-top:20px;">
+                <p><strong>Attachments:</strong></p>
+                <ul>
+                  ${mailAttachments.map(att => `<li><a href="${att.path}" target="_blank">${att.filename}</a></li>`).join('')}
+                </ul>
+              </div>
+            `;
+          }
+
+          await sendEmail({
+            to: recipient.email,
+            subject: personalizedSubject,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Message from ${senderUser.role === 'ADMIN' ? 'Admin' : 'Staff'}</h2>
+                <p>Hello ${recipient.displayName},</p>
+                <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                  ${personalizedMessage.replace(/\n/g, '<br>')}
+                </div>
+                ${buttonHtml}
+                ${attachmentsHtml}
+                <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                  This message was sent by ${senderUser.role === 'ADMIN' ? 'an administrator' : 'a staff member'} from Istiqlal Youth Academy.
+                </p>
+              </div>
+            `,
+            attachments: mailAttachments,
+          });
+          successCount++;
+          return true;
+        } catch (error) {
+          console.error(`Failed to send email to ${recipient.email}:`, error);
+          failureCount++;
+          return false;
+        }
+      });
+
+      await Promise.all(batchPromises);
+
+      // Add delay between batches to avoid rate limits (except for last batch)
+      if (i + batchSize < recipients.length) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+
+    return { successCount, failureCount };
+  };
+
+  try {
+    const { successCount, failureCount } = await sendEmailsInBatches(recipients);
+
+    // Log the message sending activity
+    await prisma.auditLog.create({
+      data: {
+        actorId: senderUser.id,
+        action: 'SEND_MESSAGE',
+        entity: 'MESSAGE',
+        entityId: 'BULK_EMAIL',
+        metadata: {
+          subject,
+          recipientType,
+          recipientCount: recipients.length,
+          successCount,
+          failureCount,
+          ...(eventId && { eventId }),
+          ...(attachments && { attachments }),
+        },
+      },
+    });
+
+    if (failureCount > 0) {
+      res.json({
+        success: true,
+        message: `Email sent successfully to ${successCount} recipient(s). ${failureCount} failed.`,
+        successCount,
+        failureCount,
+      });
+    } else {
+      res.json({
+        success: true,
+        message: `Email sent successfully to ${successCount} recipient(s)`,
+        successCount,
+      });
+    }
+  } catch (error) {
+    console.error('Error sending emails:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send some emails. Please try again.',
+    });
+  }
+});

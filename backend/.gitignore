@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+*.log
+.DS_Store
+
+src/lib/*.json
+
+# Ignore any other service account JSON files
+**/serviceAccount*.json
