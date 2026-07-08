@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { HeroParticles } from '@/components/HeroParticles';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -407,6 +408,7 @@ const Forms = () => {
 
       {/* Hero Section */}
       <section className="relative -mt-[4.5rem] pt-40 md:pt-48 pb-16 overflow-hidden z-10 gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-forms" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

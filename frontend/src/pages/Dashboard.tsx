@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Calendar, Vote, FileText, Award, Loader2 } from 'lucide-react';
+import { HeroParticles } from '@/components/HeroParticles';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -92,6 +93,7 @@ const Dashboard = () => {
     <div className="min-h-screen">
       {/* Editorial header */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-dashboard" />
         <div className="container mx-auto px-4 relative z-10 pt-36 pb-14 md:pt-44 md:pb-16">
           <motion.p
             initial={{ opacity: 0, y: 16 }}

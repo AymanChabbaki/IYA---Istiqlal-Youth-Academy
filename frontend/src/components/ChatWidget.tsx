@@ -1,8 +1,55 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Send, X, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Magnetic cursor-follow: the button drifts toward a nearby cursor and settles back with a spring. */
+const useMagnetic = (active: boolean) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const x = useSpring(mx, { stiffness: 150, damping: 14, mass: 0.4 });
+  const y = useSpring(my, { stiffness: 150, damping: 14, mass: 0.4 });
+  const rotate = useTransform(x, [-18, 18], [-10, 10]);
+
+  useEffect(() => {
+    if (!active || prefersReducedMotion()) {
+      mx.set(0);
+      my.set(0);
+      return;
+    }
+    const radius = 170;
+    const strength = 0.4;
+    const onMove = (e: MouseEvent) => {
+      const el = ref.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2);
+      const dy = e.clientY - (rect.top + rect.height / 2);
+      const dist = Math.hypot(dx, dy);
+      if (dist < radius) {
+        const pull = 1 - dist / radius;
+        mx.set(dx * pull * strength);
+        my.set(dy * pull * strength);
+      } else {
+        mx.set(0);
+        my.set(0);
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      mx.set(0);
+      my.set(0);
+    };
+  }, [active, mx, my]);
+
+  return { ref, x, y, rotate };
+};
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -18,6 +65,7 @@ export const ChatWidget = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const magnetic = useMagnetic(!open);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -54,7 +102,7 @@ export const ChatWidget = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-24 right-5 z-50 flex h-[520px] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card"
+            className="fixed bottom-40 lg:bottom-24 right-5 z-50 flex h-[min(520px,65vh)] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card"
           >
             {/* Header */}
             <div className="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/15 to-transparent px-4 py-3">
@@ -126,12 +174,14 @@ export const ChatWidget = () => {
       </AnimatePresence>
 
       <motion.button
+        ref={magnetic.ref}
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Close chat assistant" : "Open chat assistant"}
+        style={{ x: magnetic.x, y: magnetic.y, rotate: magnetic.rotate }}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.95 }}
         className={cn(
-          "fixed bottom-5 right-5 z-50 flex items-center justify-center transition-[height,width]",
+          "fixed bottom-20 lg:bottom-5 right-5 z-50 flex items-center justify-center transition-[height,width]",
           open
             ? "h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-glow"
             : "h-24 w-24 bg-transparent drop-shadow-[0_8px_24px_hsl(var(--primary)/0.45)]"

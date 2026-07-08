@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { toast } from 'sonner';
 import { LogIn, Sparkles, Scale, Users, Megaphone, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { HeroParticles } from '@/components/HeroParticles';
 import { homeContentService } from '@/services/home-content.service';
 
 const Login = () => {
@@ -169,6 +170,7 @@ const Login = () => {
         transition={{ duration: 0.6 }}
         className="relative hidden lg:flex items-center justify-center p-12 gradient-hero overflow-hidden"
       >
+        <HeroParticles variant="section" id="hero-particles-login" />
         {/* Animated Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
           <motion.div

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Footer } from '@/components/Footer';
+import { HeroParticles } from '@/components/HeroParticles';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { homeContentService } from '@/services/home-content.service';
@@ -95,6 +96,7 @@ const About = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative py-32 md:py-40 overflow-hidden -mt-[4.5rem] pt-48 md:pt-56 gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-about" />
         {/* Animated Background Elements */}
         <motion.div style={{ y: y1, opacity }} className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 opacity-20">

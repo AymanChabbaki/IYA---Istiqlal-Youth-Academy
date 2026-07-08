@@ -335,7 +335,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <HeroParticles />
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
         <HeroParticles variant="section" id="hero-particles-top" />

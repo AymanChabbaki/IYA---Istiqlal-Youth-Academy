@@ -6,6 +6,7 @@ import { blogService, Post } from '@/services/blog.service';
 import PostCard from '@/components/PostCard';
 import PostFormModal from '@/components/PostFormModal';
 import { useAuth } from '@/context/AuthContext';
+import { HeroParticles } from '@/components/HeroParticles';
 
 const LIMIT = 10;
 
@@ -84,6 +85,7 @@ export default function Blog() {
     <div className="min-h-screen">
       {/* Editorial hero */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-blog" />
         <div className="container mx-auto px-4 relative z-10 pt-40 pb-14 md:pt-44 md:pb-16">
           <p className="section-label mb-6">Community feed</p>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">

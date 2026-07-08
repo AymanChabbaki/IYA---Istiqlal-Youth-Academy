@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { toast } from 'sonner';
+import { HeroParticles } from '@/components/HeroParticles';
 import { UserPlus, ArrowRight, Scale, Megaphone, HeartHandshake, Users, Eye, EyeOff } from 'lucide-react';
 import { homeContentService } from '@/services/home-content.service';
 import { committeeService, Committee } from '@/services/committee.service';
@@ -110,6 +111,7 @@ const Register = () => {
         transition={{ duration: 0.6 }}
         className="relative hidden lg:flex items-center justify-center p-12 gradient-hero overflow-hidden"
       >
+        <HeroParticles variant="section" id="hero-particles-register" />
         {/* Animated Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
           <motion.div

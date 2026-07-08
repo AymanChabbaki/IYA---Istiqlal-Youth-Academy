@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Instagram, PlayCircle } from 'lucide-react';
 import api from '@/lib/api';
+import { HeroParticles } from '@/components/HeroParticles';
 
 interface MediaItem {
   id: string;
@@ -71,6 +72,7 @@ const Gallery = () => {
     <div className="min-h-screen">
       {/* Editorial hero */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-gallery" />
         <div className="container mx-auto px-4 relative z-10 pt-40 pb-20 md:pt-48 md:pb-24">
           <motion.p
             initial={{ opacity: 0, y: 16 }}

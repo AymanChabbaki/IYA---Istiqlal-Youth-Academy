@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Footer } from '@/components/Footer';
+import { HeroParticles } from '@/components/HeroParticles';
 import { Linkedin, Github, Twitter, Mail, Users } from 'lucide-react';
 import { userService } from '@/services/user.service';
 import { useToast } from '@/hooks/use-toast';
@@ -77,6 +78,7 @@ const Members = () => {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-members" />
         <div className="container mx-auto px-4 relative z-10 pt-40 pb-20 md:pt-48 md:pb-24">
           <motion.p
             initial={{ opacity: 0, y: 16 }}

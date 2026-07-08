@@ -8,10 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, User, LogOut, Languages, Menu, ChevronDown } from 'lucide-react';
+import { Bell, User, LogOut, Languages, Menu, ChevronDown, Home, Calendar, Image, LogIn } from 'lucide-react';
 import NotificationToggle from './NotificationToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { AnthemPlayer } from './AnthemPlayer';
+import { SocialFollow } from './SocialFollow';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -89,6 +90,21 @@ export const Navbar = () => {
   };
 
   const userLinks = getUserLinks();
+
+  const profileBottomLink = !isAuthenticated
+    ? { to: '/login', label: t.nav.login, icon: LogIn }
+    : user?.role === 'ADMIN'
+    ? { to: '/admin/dashboard', label: 'Admin', icon: User }
+    : user?.role === 'STAFF'
+    ? { to: '/staff/dashboard', label: 'Staff', icon: User }
+    : { to: '/dashboard', label: t.nav.dashboard, icon: User };
+
+  const bottomNavLinks = [
+    { to: '/', label: t.nav.home, icon: Home },
+    { to: '/events', label: t.nav.events, icon: Calendar },
+    { to: '/gallery', label: 'Gallery', icon: Image },
+    profileBottomLink,
+  ];
 
   return (
     <>
@@ -173,6 +189,8 @@ export const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
+            <SocialFollow />
             <AnthemPlayer />
             <ThemeToggle />
 
@@ -248,7 +266,7 @@ export const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Button variant="ghost" asChild className="rounded-full font-semibold">
                   <Link to="/login">{t.nav.login}</Link>
                 </Button>
@@ -257,6 +275,7 @@ export const Navbar = () => {
                 </Button>
               </div>
             )}
+          </div>
 
             {/* Mobile Menu */}
             <Button
@@ -286,16 +305,21 @@ export const Navbar = () => {
               onClick={() => setMobileMenuOpen(false)}
             />
             
-            {/* Slide Menu */}
+            {/* Slide-up Menu (bottom sheet) */}
             <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-background shadow-2xl z-[100] lg:hidden overflow-y-auto"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+              className="fixed inset-x-0 bottom-0 max-h-[88vh] w-full rounded-t-3xl bg-background shadow-2xl z-[100] lg:hidden overflow-y-auto"
             >
+                {/* Drag handle */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="h-1.5 w-12 rounded-full bg-foreground/15" />
+                </div>
+
                 {/* Header */}
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden rounded-t-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-90"></div>
                   <div className="relative px-6 py-8">
                     <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
@@ -434,11 +458,50 @@ export const Navbar = () => {
                       </button>
                     </>
                   )}
+
+                  <div className="my-4 border-t border-border"></div>
+                  <div className="flex items-center justify-between px-4 pb-2">
+                    <SocialFollow />
+                    <div className="flex items-center gap-1">
+                      <AnthemPlayer />
+                      <ThemeToggle />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </>
           )}
         </AnimatePresence>
+
+      {/* Bottom tab bar - mobile only */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-background/90 backdrop-blur-xl lg:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {bottomNavLinks.map((link) => {
+          const active = location.pathname === link.to;
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+                active ? 'text-primary' : 'text-foreground/55'
+              }`}
+            >
+              <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+              {link.label}
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/55 transition-colors"
+        >
+          <Menu className="h-5 w-5" />
+          Menu
+        </button>
+      </nav>
     </>
   );
 };

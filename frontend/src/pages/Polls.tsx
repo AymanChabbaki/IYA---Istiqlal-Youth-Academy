@@ -10,6 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Vote, CheckCircle, BarChart3, Users, TrendingUp, AlertCircle, Lock, Sparkles, Loader2 } from 'lucide-react';
+import { HeroParticles } from '@/components/HeroParticles';
 import { pollService } from '@/services/poll.service';
 
 interface PollOption {
@@ -153,6 +154,7 @@ const Polls = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-polls" />
         <div className="container mx-auto px-4 relative z-10 pt-40 pb-16 md:pt-48 md:pb-20">
           <motion.p
             initial={{ opacity: 0, y: 16 }}

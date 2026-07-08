@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Footer } from '@/components/Footer';
+import { HeroParticles } from '@/components/HeroParticles';
 import {
   Mail, MapPin, Send, Sparkles, MessageCircle,
   Clock, Globe, CheckCircle, Loader2
@@ -95,6 +96,7 @@ const Contact = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative py-32 md:py-40 overflow-hidden -mt-[4.5rem] pt-48 md:pt-56 gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-contact" />
         {/* Animated Background Elements */}
         <motion.div style={{ y: y1, opacity }} className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 opacity-20">

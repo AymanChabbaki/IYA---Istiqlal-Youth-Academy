@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Footer } from '@/components/Footer';
+import { HeroParticles } from '@/components/HeroParticles';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { eventService } from '@/services/event.service';
@@ -131,6 +132,7 @@ const Events = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-events" />
         <div className="container mx-auto px-4 relative z-10 pt-40 pb-16 md:pt-48 md:pb-20">
           <motion.p
             initial={{ opacity: 0, y: 16 }}

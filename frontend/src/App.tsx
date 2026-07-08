@@ -12,6 +12,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { OnboardingCheck } from "@/components/OnboardingCheck";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ChatWidget } from "@/components/ChatWidget";
+import { HeroParticles } from "@/components/HeroParticles";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -98,13 +99,14 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { pathname } = useLocation();
   return (
     <div className="min-h-screen flex flex-col">
+      <HeroParticles />
       <Navbar />
       <motion.main
         key={pathname}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="flex-1"
+        className="flex-1 pb-16 lg:pb-0"
       >
         {children}
       </motion.main>

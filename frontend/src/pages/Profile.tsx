@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
+import { HeroParticles } from '@/components/HeroParticles';
 import { useLanguage } from '@/context/LanguageContext';
 import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
@@ -268,6 +269,7 @@ const Profile = () => {
     <div className="min-h-screen">
       {/* Hero Header with Gradient */}
       <div className="relative h-64 gradient-hero overflow-hidden">
+        <HeroParticles variant="section" id="hero-particles-profile" />
         <motion.div
           className="absolute inset-0"
           initial={{ opacity: 0 }}

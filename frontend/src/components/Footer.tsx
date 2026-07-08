@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, ArrowUpRight, Instagram } from 'lucide-react';
+import { Mail, ArrowUpRight, Instagram, Facebook, Linkedin } from 'lucide-react';
 
 const exploreLinks = [
   { label: 'Events', to: '/events' },
@@ -87,6 +87,24 @@ export const Footer = () => {
             >
               <Instagram className="h-4 w-4 group-hover:text-primary transition-colors" />
               @istiqlalyouthacademy
+            </a>
+            <a
+              href="https://www.facebook.com/p/Istiqlal-Youth-Academy-/61572416627336/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Facebook"
+              className="group inline-flex items-center justify-center h-10 w-10 rounded-full border border-white/15 text-white/80 hover:border-primary hover:text-white hover:shadow-glow transition-all"
+            >
+              <Facebook className="h-4 w-4 group-hover:text-primary transition-colors" />
+            </a>
+            <a
+              href="https://ma.linkedin.com/company/istiqlal-youth-academy"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="LinkedIn"
+              className="group inline-flex items-center justify-center h-10 w-10 rounded-full border border-white/15 text-white/80 hover:border-primary hover:text-white hover:shadow-glow transition-all"
+            >
+              <Linkedin className="h-4 w-4 group-hover:text-primary transition-colors" />
             </a>
             <a
               href="mailto:contact@istiqlalyouthacademy.org"
