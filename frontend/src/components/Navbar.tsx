@@ -11,6 +11,7 @@ import {
 import { Bell, User, LogOut, Languages, Menu, ChevronDown } from 'lucide-react';
 import NotificationToggle from './NotificationToggle';
 import { ThemeToggle } from './ThemeToggle';
+import { AnthemPlayer } from './AnthemPlayer';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -172,6 +173,7 @@ export const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center gap-3">
+            <AnthemPlayer />
             <ThemeToggle />
 
             {isAuthenticated ? (

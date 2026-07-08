@@ -12,7 +12,7 @@ export const getHomeContent = async (req: AuthRequest, res: Response) => {
       // Return default content if none exists
       return res.json({
         heroTitle: 'Welcome to Istiqlal Youth Academy',
-        heroSubtitle: 'Join us in exploring the future of artificial intelligence and machine learning',
+        heroSubtitle: 'Reflection, Inclusion, Advocacy: the official youth wing of the Istiqlal Party (حزب الاستقلال) in Morocco',
         heroCtaText: 'Get Started',
         heroCtaLink: '/register',
         featuredEventIds: [],
@@ -154,7 +154,7 @@ export const initializeHomeContent = async (req: AuthRequest, res: Response) => 
     const content = await prisma.homeContent.create({
       data: {
         heroTitle: 'Welcome to Istiqlal Youth Academy',
-        heroSubtitle: 'Join us in exploring the future of artificial intelligence and machine learning. Connect with like-minded developers, attend workshops, and build amazing projects together.',
+        heroSubtitle: 'Reflection, Inclusion, Advocacy: the official youth wing of the Istiqlal Party (حزب الاستقلال) in Morocco, empowering young Moroccans to lead, debate, and build the country\'s future.',
         heroCtaText: 'Explore Events',
         heroCtaLink: '/events',
         featuredEventIds: [],

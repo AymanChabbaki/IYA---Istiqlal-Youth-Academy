@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { EventCard } from '@/components/EventCard';
 import { Footer } from '@/components/Footer';
+import { HeroParticles } from '@/components/HeroParticles';
 import LeaderboardWidget from '@/components/LeaderboardWidget';
 import {
   ArrowRight, ArrowUpRight, Calendar, Users, Scale, Megaphone,
@@ -334,8 +335,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <HeroParticles />
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-top" />
         <div className="container mx-auto px-4 relative z-10 pt-36 md:pt-44 pb-16">
           <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center">
           <div>
@@ -862,6 +865,7 @@ const Index = () => {
 
       {/* ── CTA ──────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden gradient-hero noise py-28 md:py-36">
+        <HeroParticles variant="section" id="hero-particles-cta" />
         <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}

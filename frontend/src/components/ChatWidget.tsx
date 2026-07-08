@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MessageCircle, Send, X, Loader2 } from "lucide-react";
+import { Send, X, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +130,12 @@ export const ChatWidget = () => {
         aria-label={open ? "Close chat assistant" : "Open chat assistant"}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.95 }}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-glow"
+        className={cn(
+          "fixed bottom-5 right-5 z-50 flex items-center justify-center transition-[height,width]",
+          open
+            ? "h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-glow"
+            : "h-24 w-24 bg-transparent drop-shadow-[0_8px_24px_hsl(var(--primary)/0.45)]"
+        )}
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
@@ -138,9 +143,15 @@ export const ChatWidget = () => {
               <X className="h-6 w-6" />
             </motion.span>
           ) : (
-            <motion.span key="open" initial={{ rotate: 45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -45, opacity: 0 }}>
-              <MessageCircle className="h-6 w-6" />
-            </motion.span>
+            <motion.img
+              key="open"
+              src="/chatbot-avatar.png"
+              alt=""
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              className="h-full w-full object-contain"
+            />
           )}
         </AnimatePresence>
       </motion.button>
