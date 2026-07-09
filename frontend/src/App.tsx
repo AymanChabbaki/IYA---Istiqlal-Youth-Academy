@@ -9,7 +9,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Navbar } from "@/components/Navbar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { OnboardingCheck } from "@/components/OnboardingCheck";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ChatWidget } from "@/components/ChatWidget";
 import { HeroParticles } from "@/components/HeroParticles";
@@ -133,7 +132,6 @@ const App = () => {
           <Toaster />
           <Sonner />
           <SplashScreen />
-          <OnboardingCheck />
           <BrowserRouter>
             <Routes>
               {/* Public Routes with Navbar */}

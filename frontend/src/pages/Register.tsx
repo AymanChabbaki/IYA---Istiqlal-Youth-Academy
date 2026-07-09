@@ -86,11 +86,6 @@ const Register = () => {
       });
       if (success) {
         toast.success(t.auth.registerSuccess);
-
-        // Store that user needs to complete the form
-        localStorage.setItem('needsOnboarding', 'true');
-
-        // Navigate to dashboard where the onboarding modal will show
         navigate('/dashboard');
       } else {
         toast.error('User already exists');
