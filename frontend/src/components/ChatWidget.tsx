@@ -7,6 +7,22 @@ import { cn } from "@/lib/utils";
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/** Matches Tailwind's `lg` breakpoint, used to switch the chat panel between a mobile bottom sheet and a desktop floating card. */
+const useIsDesktop = () => {
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setIsDesktop(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isDesktop;
+};
+
 /** Magnetic cursor-follow: the button drifts toward a nearby cursor and settles back with a spring. */
 const useMagnetic = (active: boolean) => {
   const ref = useRef<HTMLButtonElement>(null);
@@ -66,6 +82,7 @@ export const ChatWidget = () => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const magnetic = useMagnetic(!open);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -98,12 +115,22 @@ export const ChatWidget = () => {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-40 lg:bottom-24 right-5 z-50 flex h-[min(520px,65vh)] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card"
+            initial={isDesktop ? { opacity: 0, y: 24, scale: 0.96 } : { y: "100%" }}
+            animate={isDesktop ? { opacity: 1, y: 0, scale: 1 } : { y: 0 }}
+            exit={isDesktop ? { opacity: 0, y: 16, scale: 0.97 } : { y: "100%" }}
+            transition={isDesktop ? { duration: 0.2, ease: "easeOut" } : { type: "spring", damping: 28, stiffness: 260 }}
+            className={cn(
+              "fixed z-50 flex flex-col overflow-hidden border-border bg-card shadow-card",
+              isDesktop
+                ? "bottom-24 right-5 h-[min(520px,65vh)] w-[min(380px,calc(100vw-2.5rem))] rounded-2xl border"
+                : "inset-x-0 bottom-0 h-[80vh] rounded-t-3xl border-t"
+            )}
           >
+            {!isDesktop && (
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="h-1.5 w-12 rounded-full bg-foreground/15" />
+              </div>
+            )}
             {/* Header */}
             <div className="relative flex items-center gap-3 border-b border-border bg-gradient-to-r from-primary/15 to-transparent px-4 py-3">
               <img

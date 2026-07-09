@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, User, LogOut, Languages, Menu, ChevronDown, Home, Calendar, Image, LogIn } from 'lucide-react';
+import { Bell, User, LogOut, Languages, Menu, ChevronDown, Home, Calendar, Image, LogIn, X } from 'lucide-react';
 import NotificationToggle from './NotificationToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { AnthemPlayer } from './AnthemPlayer';
@@ -116,7 +116,14 @@ export const Navbar = () => {
         }`}
       >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-[4.5rem]">
+          <div className="relative flex items-center justify-between h-[4.5rem]">
+          {/* Mobile-only: Follow us / anthem / theme, centered */}
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 lg:hidden">
+            <SocialFollow />
+            <AnthemPlayer />
+            <ThemeToggle />
+          </div>
+
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
             <div className="relative">
@@ -321,6 +328,13 @@ export const Navbar = () => {
                 {/* Header */}
                 <div className="relative overflow-hidden rounded-t-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent opacity-90"></div>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-label="Close menu"
+                    className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-sm transition-colors hover:bg-black/30"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                   <div className="relative px-6 py-8">
                     <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
                       <img
@@ -460,9 +474,9 @@ export const Navbar = () => {
                   )}
 
                   <div className="my-4 border-t border-border"></div>
-                  <div className="flex items-center justify-between px-4 pb-2">
+                  <div className="flex flex-col items-center gap-3 px-4 pb-2">
                     <SocialFollow />
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <AnthemPlayer />
                       <ThemeToggle />
                     </div>
