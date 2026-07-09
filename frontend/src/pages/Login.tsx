@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { toast } from 'sonner';
 import { LogIn, Sparkles, Scale, Users, Megaphone, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { HeroParticles } from '@/components/HeroParticles';
 import { homeContentService } from '@/services/home-content.service';
@@ -38,10 +37,10 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // AuthContext.login already surfaces the specific backend error (wrong password,
+      // unknown account, etc.) via its own toast on failure, so we only handle success here.
       const success = await login(email, password);
       if (success) {
-        toast.success(t.auth.loginSuccess);
-        
         // Redirect based on user role
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -56,11 +55,7 @@ const Login = () => {
         } else {
           navigate('/dashboard');
         }
-      } else {
-        toast.error(t.auth.error);
       }
-    } catch (error) {
-      toast.error(t.auth.error);
     } finally {
       setLoading(false);
     }

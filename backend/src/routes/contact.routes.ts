@@ -10,12 +10,14 @@ import {
 import { validateRequest } from '../middleware/validate';
 import { body } from 'express-validator';
 import { authenticate, authorize } from '../middleware/auth';
+import { publicFormLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
 // Public route
 router.post(
   '/',
+  publicFormLimiter,
   [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required'),

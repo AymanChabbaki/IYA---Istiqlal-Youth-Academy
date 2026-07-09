@@ -116,7 +116,7 @@ export const getAllEvents = asyncHandler(async (req: AuthRequest, res: Response)
     console.error('Error fetching events:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch events: ' + error.message
+      error: 'Failed to fetch events'
     });
   }
 });
@@ -601,15 +601,30 @@ export const exportRegistrations = asyncHandler(async (req: AuthRequest, res: Re
     }
   });
 
+  // Escape for CSV syntax (quotes/commas/newlines) and neutralize formula injection
+  // (a leading =, +, -, or @ is interpreted as a formula by Excel/Sheets on open).
+  const escapeCsvValue = (value: unknown): string => {
+    let stringValue = value === null || value === undefined ? '' : String(value);
+    if (/^[=+\-@]/.test(stringValue)) {
+      stringValue = `'${stringValue}`;
+    }
+    if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    }
+    return stringValue;
+  };
+
   // Create CSV
   const csvHeader = 'Name,Email,Status,Registered At,Checked In\n';
-  const csvRows = registrations.map((reg: typeof registrations[0]) => 
-    `${reg.user.displayName},${reg.user.email},${reg.status},${reg.createdAt},${reg.checkedInAt || 'Not checked in'}`
+  const csvRows = registrations.map((reg: typeof registrations[0]) =>
+    [reg.user.displayName, reg.user.email, reg.status, reg.createdAt, reg.checkedInAt || 'Not checked in']
+      .map(escapeCsvValue)
+      .join(',')
   ).join('\n');
 
   const csv = csvHeader + csvRows;
 
-  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename=registrations-${id}.csv`);
   res.send(csv);
 });
@@ -1125,7 +1140,7 @@ export const downloadBadge = asyncHandler(async (req: AuthRequest, res: Response
     res.send(pdfBuffer);
   } catch (error: any) {
     console.error('Error in downloadBadge:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate badge: ' + error.message });
+    res.status(500).json({ success: false, error: 'Failed to generate badge' });
   }
 });
 

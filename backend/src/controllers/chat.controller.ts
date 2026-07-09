@@ -76,7 +76,6 @@ export const sendChatMessage = async (req: Request, res: Response): Promise<void
     res.json({ reply });
   } catch (err: unknown) {
     console.error('[Chat] sendChatMessage error:', err);
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

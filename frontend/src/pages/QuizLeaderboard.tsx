@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { useToast } from '../hooks/use-toast';
+import { Footer } from '@/components/Footer';
 
 const QuizLeaderboard = () => {
   const { id } = useParams<{ id: string }>();
@@ -447,6 +448,8 @@ const QuizLeaderboard = () => {
         )}
         </motion.div>
       </div>
+
+      <Footer />
     </div>
   );
 };

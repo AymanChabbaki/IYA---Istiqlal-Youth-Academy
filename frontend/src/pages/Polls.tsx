@@ -241,6 +241,13 @@ const Polls = () => {
       <div className="container mx-auto px-4 max-w-4xl py-16">
 
         <div className="space-y-8">
+          {!loading && polls.length === 0 && (
+            <div className="py-24 text-center">
+              <Vote className="w-14 h-14 mx-auto text-muted-foreground mb-6 opacity-40" />
+              <h3 className="font-display font-black uppercase tracking-tight text-3xl mb-2">No polls yet.</h3>
+              <p className="text-muted-foreground">Check back soon, new polls will show up here.</p>
+            </div>
+          )}
           {polls.map((poll, index) => {
             const displayQuestion =
               language === 'fr'

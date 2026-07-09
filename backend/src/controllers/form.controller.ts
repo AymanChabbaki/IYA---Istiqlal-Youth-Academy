@@ -83,6 +83,38 @@ export const submitForm = asyncHandler(async (req: AuthRequest, res: Response) =
     });
   }
 
+  if (!answers || typeof answers !== 'object' || Array.isArray(answers)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Answers must be provided as an object keyed by field id'
+    });
+  }
+
+  // Validate against the form's own field definitions: every required field must have a
+  // non-empty answer, and every submitted key must correspond to a real field on this form.
+  const fields = (form.fields as { id: string; label: string; required?: boolean }[]) || [];
+  const fieldIds = new Set(fields.map((f) => f.id));
+
+  const missing = fields.filter((f) => {
+    if (!f.required) return false;
+    const value = (answers as Record<string, unknown>)[f.id];
+    return value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0);
+  });
+  if (missing.length > 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Missing required field(s): ${missing.map((f) => f.label).join(', ')}`
+    });
+  }
+
+  const unknownKeys = Object.keys(answers).filter((key) => !fieldIds.has(key));
+  if (unknownKeys.length > 0) {
+    return res.status(400).json({
+      success: false,
+      error: `Unknown field(s) submitted: ${unknownKeys.join(', ')}`
+    });
+  }
+
   const response = await prisma.formResponse.create({
     data: {
       formId: id,

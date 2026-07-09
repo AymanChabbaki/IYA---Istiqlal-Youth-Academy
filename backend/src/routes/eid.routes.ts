@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { generate, uploadPhoto, getSubmissions } from '../controllers/eid.controller';
 import { authenticate, authorize } from '../middleware/auth';
+import { aiGenerateLimiter } from '../middleware/rateLimiters';
 
 // ─── Cloudinary storage for Eid photos ──────────────────────────────────
 const photoStorage = new CloudinaryStorage({
@@ -28,7 +29,7 @@ const uploadMiddleware = multer({
 const router = Router();
 
 // Public, no auth required (workshop activity)
-router.post('/generate', generate);
+router.post('/generate', aiGenerateLimiter, generate);
 router.post('/upload-photo', uploadMiddleware.single('photo'), uploadPhoto);
 
 // Admin / Staff: view all submissions

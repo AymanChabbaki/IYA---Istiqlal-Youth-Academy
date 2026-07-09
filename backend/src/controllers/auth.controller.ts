@@ -147,7 +147,7 @@ export const login = asyncHandler(async (req: AuthRequest, res: Response) => {
     }
   });
 
-  const { passwordHash, ...userWithoutPassword } = user;
+  const { passwordHash, resetToken, resetTokenExpiry, ...userWithoutPassword } = user;
 
   res.json({
     success: true,
@@ -193,9 +193,26 @@ export const refresh = asyncHandler(async (req: AuthRequest, res: Response) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } as jwt.SignOptions
     );
 
+    // Rotate the refresh token: issue a new one and invalidate the old, so a leaked
+    // token has a single-use window instead of remaining valid for its full 7-day life.
+    const newRefreshToken = jwt.sign(
+      { id: storedToken.user.id },
+      process.env.JWT_REFRESH_SECRET as string,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' } as jwt.SignOptions
+    );
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+
+    await prisma.$transaction([
+      prisma.refreshToken.delete({ where: { token: refreshToken } }),
+      prisma.refreshToken.create({
+        data: { token: newRefreshToken, userId: storedToken.user.id, expiresAt: newExpiresAt },
+      }),
+    ]);
+
     res.json({
       success: true,
-      data: { accessToken }
+      data: { accessToken, refreshToken: newRefreshToken }
     });
   } catch (error) {
     return res.status(401).json({
@@ -300,6 +317,9 @@ export const resetPassword = asyncHandler(async (req: AuthRequest, res: Response
       resetTokenExpiry: null
     }
   });
+
+  // Invalidate every existing session: a stolen refresh token should not survive a password reset
+  await prisma.refreshToken.deleteMany({ where: { userId: user.id } });
 
   res.json({
     success: true,

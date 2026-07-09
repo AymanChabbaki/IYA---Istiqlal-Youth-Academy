@@ -50,7 +50,7 @@ export const EventCard: React.FC<EventCardProps> = ({
     >
       <Card className="overflow-hidden shadow-card hover:shadow-glow transition-all">
         <div className="relative h-48 overflow-hidden">
-          <img src={image} alt={displayTitle || title} className="w-full h-full object-cover" />
+          <img src={image} alt={displayTitle || title} loading="lazy" className="w-full h-full object-cover" />
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
               {category}

@@ -7,6 +7,16 @@ import { blogService, Comment } from '@/services/blog.service';
 import { useAuth } from '@/context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import UserProfileModal from './UserProfileModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Props {
   postId: string;
@@ -119,6 +129,7 @@ export default function CommentsSection({ postId, commentCount, onCountChange }:
   const [replyText, setReplyText] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -206,7 +217,7 @@ export default function CommentsSection({ postId, commentCount, onCountChange }:
             <div key={c.id}>
               <CommentRow
                 comment={c}
-                onDelete={remove}
+                onDelete={setPendingDeleteId}
                 onLikeToggle={toggleLike}
                 onReplyClick={(id, name) => { setReplyingTo({ id, name }); setReplyText(''); }}
                 onProfileClick={setProfileUserId}
@@ -220,7 +231,7 @@ export default function CommentsSection({ postId, commentCount, onCountChange }:
                   key={r.id}
                   comment={r}
                   isReply
-                  onDelete={remove}
+                  onDelete={setPendingDeleteId}
                   onLikeToggle={toggleLike}
                   onProfileClick={setProfileUserId}
                   currentUserId={user?.id}
@@ -286,6 +297,27 @@ export default function CommentsSection({ postId, commentCount, onCountChange }:
       {profileUserId && (
         <UserProfileModal userId={profileUserId} onClose={() => setProfileUserId(null)} />
       )}
+
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+            <AlertDialogDescription>This can't be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (pendingDeleteId) remove(pendingDeleteId);
+                setPendingDeleteId(null);
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

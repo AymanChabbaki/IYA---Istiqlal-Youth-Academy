@@ -192,9 +192,10 @@ const Podcasts = () => {
                     {/* Thumbnail Image (Always show if available) */}
                     <div className="relative aspect-video bg-muted overflow-hidden">
                       {podcast.thumbnailUrl ? (
-                        <img 
-                          src={podcast.thumbnailUrl} 
+                        <img
+                          src={podcast.thumbnailUrl}
                           alt={podcast.title}
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (

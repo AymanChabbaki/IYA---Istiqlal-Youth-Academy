@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Trophy, Lock, Play, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Trophy, Lock, Play, CheckCircle, Brain } from 'lucide-react';
 import quizService, { Quiz, QuizAttempt } from '../services/quiz.service';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { useToast } from '../hooks/use-toast';
+import { HeroParticles } from '@/components/HeroParticles';
+import { Footer } from '@/components/Footer';
 
 const Quizzes = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -54,7 +56,7 @@ const Quizzes = () => {
     }
   };
 
-  const filteredQuizzes = quizzes.filter(quiz => 
+  const filteredQuizzes = quizzes.filter(quiz =>
     filter === 'ALL' ? true : quiz.status === filter
   );
 
@@ -75,36 +77,47 @@ const Quizzes = () => {
     navigate(`/quizzes/${quizId}/leaderboard`);
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Quizzes</h1>
-            <p className="text-muted-foreground">Test your knowledge and compete with others!</p>
-          </div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden -mt-[4.5rem] gradient-hero noise">
+        <HeroParticles variant="section" id="hero-particles-quizzes" />
+        <div className="container mx-auto px-4 relative z-10 pt-40 pb-16 md:pt-48 md:pb-20">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="section-label mb-6"
+          >
+            Test your knowledge
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 28 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="font-display font-black uppercase text-foreground leading-[0.9] tracking-tight text-6xl md:text-8xl"
+          >
+            <span className="gradient-text">Quizzes</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="text-muted-foreground leading-relaxed max-w-xl mt-6 text-lg"
+          >
+            Compete with fellow members, put your civic and political knowledge to the test.
+          </motion.p>
         </div>
+      </section>
 
+      {/* Content */}
+      <section className="container mx-auto px-4 py-16 md:py-20">
         {/* Filter Buttons */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-10 flex-wrap">
           {['ALL', 'UPCOMING', 'ACTIVE', 'CLOSED'].map((status) => (
             <Button
               key={status}
               variant={filter === status ? 'default' : 'outline'}
+              className="rounded-full"
               onClick={() => setFilter(status as any)}
             >
               {status}
@@ -112,15 +125,18 @@ const Quizzes = () => {
           ))}
         </div>
 
-        {/* Quizzes Grid */}
-        {filteredQuizzes.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Trophy className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-xl font-medium mb-2">No quizzes available</p>
-              <p className="text-muted-foreground">Check back later for new quizzes!</p>
-            </CardContent>
-          </Card>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-80 rounded-3xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : filteredQuizzes.length === 0 ? (
+          <div className="py-24 text-center">
+            <Brain className="w-14 h-14 mx-auto text-muted-foreground mb-6 opacity-40" />
+            <h3 className="font-display font-black uppercase tracking-tight text-3xl mb-2">No quizzes yet.</h3>
+            <p className="text-muted-foreground">Check back later for new quizzes!</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredQuizzes.map((quiz, index) => {
@@ -131,15 +147,17 @@ const Quizzes = () => {
                 <motion.div
                   key={quiz.id}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
                 >
-                  <Card className="h-full flex flex-col">
+                  <Card className="h-full flex flex-col rounded-3xl shadow-card hover:shadow-glow transition-all overflow-hidden">
                     {quiz.coverImage && (
-                      <div className="relative h-48 overflow-hidden rounded-t-lg">
+                      <div className="relative h-48 overflow-hidden">
                         <img
                           src={quiz.coverImage}
                           alt={quiz.title}
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-4 right-4">
@@ -169,7 +187,7 @@ const Quizzes = () => {
                           <span>{Math.floor(quiz.timeLimit / 60)} minutes</span>
                         </div>
                         {hasAttempted && attempt && (
-                          <div className="flex items-center gap-2 text-green-600">
+                          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                             <CheckCircle className="h-4 w-4" />
                             <span>Score: {attempt.totalScore} points</span>
                           </div>
@@ -178,25 +196,25 @@ const Quizzes = () => {
                     </CardContent>
                     <CardFooter>
                       {quiz.status === 'UPCOMING' && (
-                        <Button disabled className="w-full" variant="outline">
+                        <Button disabled className="w-full rounded-full" variant="outline">
                           <Lock className="mr-2 h-4 w-4" />
                           Coming Soon
                         </Button>
                       )}
                       {quiz.status === 'ACTIVE' && !hasAttempted && (
-                        <Button onClick={() => handlePlayQuiz(quiz.id)} className="w-full">
+                        <Button onClick={() => handlePlayQuiz(quiz.id)} className="w-full rounded-full gradient-primary shadow-glow">
                           <Play className="mr-2 h-4 w-4" />
                           Play Quiz
                         </Button>
                       )}
                       {quiz.status === 'ACTIVE' && hasAttempted && (
-                        <Button onClick={() => handleViewResults(quiz.id)} className="w-full" variant="outline">
+                        <Button onClick={() => handleViewResults(quiz.id)} className="w-full rounded-full" variant="outline">
                           <Trophy className="mr-2 h-4 w-4" />
                           View Leaderboard
                         </Button>
                       )}
                       {quiz.status === 'CLOSED' && (
-                        <Button onClick={() => handleViewResults(quiz.id)} className="w-full" variant="outline">
+                        <Button onClick={() => handleViewResults(quiz.id)} className="w-full rounded-full" variant="outline">
                           <Trophy className="mr-2 h-4 w-4" />
                           View Results
                         </Button>
@@ -208,7 +226,9 @@ const Quizzes = () => {
             })}
           </div>
         )}
-      </motion.div>
+      </section>
+
+      <Footer />
     </div>
   );
 };

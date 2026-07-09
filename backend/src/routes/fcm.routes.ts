@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { registerToken, listTokens, deleteToken, sendMaghribNow, debugListTokens, sendToToken, sendPrayerNow, sendAdkarNow, getMessage } from '../controllers/fcm.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 
@@ -8,8 +8,8 @@ const router = Router();
 router.post('/register', registerToken);
 
 // Admin endpoints
-router.get('/list', authenticate, listTokens);
-router.delete('/delete', authenticate, deleteToken);
+router.get('/list', authenticate, authorize('ADMIN'), listTokens);
+router.delete('/delete', authenticate, authorize('ADMIN'), deleteToken);
 // Protected trigger for hosts without persistent schedulers (call with x-scheduler-token header)
 router.post('/send-maghrib-now', sendMaghribNow);
 // Scheduler endpoints to trigger other prayers or adkar

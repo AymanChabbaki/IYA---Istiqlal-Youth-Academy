@@ -246,6 +246,9 @@ export const changePassword = asyncHandler(async (req: AuthRequest, res: Respons
     data: { passwordHash: newPasswordHash }
   });
 
+  // Invalidate every existing session: a stolen refresh token should not survive a password change
+  await prisma.refreshToken.deleteMany({ where: { userId: req.user!.id } });
+
   res.json({
     success: true,
     message: 'Password changed successfully'

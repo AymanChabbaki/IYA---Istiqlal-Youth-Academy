@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { toast } from 'sonner';
 import { HeroParticles } from '@/components/HeroParticles';
 import { UserPlus, ArrowRight, Scale, Megaphone, HeartHandshake, Users, Eye, EyeOff } from 'lucide-react';
 import { homeContentService } from '@/services/home-content.service';
@@ -76,6 +75,8 @@ const Register = () => {
     setLoading(true);
 
     try {
+      // AuthContext.register already surfaces the specific backend error (e.g. "User already
+      // exists") via its own toast on failure, so we only handle success here.
       const success = await register(name, email, password, {
         studyLevel,
         studyProgram,
@@ -85,13 +86,8 @@ const Register = () => {
         committeeId,
       });
       if (success) {
-        toast.success(t.auth.registerSuccess);
         navigate('/dashboard');
-      } else {
-        toast.error('User already exists');
       }
-    } catch (error) {
-      toast.error(t.auth.error);
     } finally {
       setLoading(false);
     }

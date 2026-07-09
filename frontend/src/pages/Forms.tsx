@@ -381,7 +381,7 @@ const Forms = () => {
               <SelectTrigger className="h-14 bg-card border-border rounded-2xl px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-foreground">
                 <SelectValue placeholder={placeholder || "Choose an option"} />
               </SelectTrigger>
-              <SelectContent className="bg-[#0f172a] border-border text-foreground backdrop-blur-3xl">
+              <SelectContent className="bg-popover border-border text-foreground backdrop-blur-3xl">
                 {field.options?.map((option, index) => (
                   <SelectItem key={index} value={option} className="focus:bg-primary/20 focus:text-foreground">
                     {option}
@@ -480,6 +480,13 @@ const Forms = () => {
               </div>
 
               {/* Grid Layout */}
+              {!loading && forms.length === 0 ? (
+                <div className="py-24 text-center">
+                  <FileText className="w-14 h-14 mx-auto text-muted-foreground mb-6 opacity-40" />
+                  <h3 className="font-display font-black uppercase tracking-tight text-3xl mb-2">No forms yet.</h3>
+                  <p className="text-muted-foreground">Available forms will show up here.</p>
+                </div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence mode="popLayout">
                   {forms.map((form, index) => {
@@ -563,6 +570,7 @@ const Forms = () => {
                   })}
                 </AnimatePresence>
               </div>
+              )}
             </div>
           ) : (
             <motion.div

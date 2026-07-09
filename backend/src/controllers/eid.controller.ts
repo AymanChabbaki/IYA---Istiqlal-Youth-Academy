@@ -135,8 +135,7 @@ export const generate = async (req: Request, res: Response): Promise<void> => {
     res.json({ imageDataUrl: savedImageUrl, compliment });
   } catch (err: unknown) {
     console.error('[Eid] generate error:', err);
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -152,8 +151,7 @@ export const uploadPhoto = async (req: Request, res: Response): Promise<void> =>
     res.json({ url });
   } catch (err: unknown) {
     console.error('[Eid] uploadPhoto error:', err);
-    const message = err instanceof Error ? err.message : 'Upload failed';
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: 'Upload failed' });
   }
 };
 
@@ -166,7 +164,6 @@ export const getSubmissions = async (_req: Request, res: Response): Promise<void
     res.json({ submissions });
   } catch (err: unknown) {
     console.error('[Eid] getSubmissions error:', err);
-    const message = err instanceof Error ? err.message : 'Internal server error';
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

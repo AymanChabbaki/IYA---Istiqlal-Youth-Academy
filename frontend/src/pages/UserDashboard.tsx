@@ -35,10 +35,45 @@ const UserDashboard = () => {
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
   const [qrDialog, setQrDialog] = useState(false);
+  const [badgeQrRegistration, setBadgeQrRegistration] = useState<any>(null);
 
   useEffect(() => {
     fetchRegistrations();
   }, []);
+
+  // Renders the hidden QR for `badgeQrRegistration` off-screen, then draws it into the PDF.
+  useEffect(() => {
+    if (!badgeQrRegistration) return;
+
+    const timer = setTimeout(() => {
+      const qrEl = document.querySelector('.badge-qr-hidden svg');
+      if (qrEl instanceof SVGElement) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const svgData = new XMLSerializer().serializeToString(qrEl);
+          const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0, 400, 400);
+            URL.revokeObjectURL(url);
+            buildBadgePdf(badgeQrRegistration, canvas.toDataURL('image/png'));
+            setBadgeQrRegistration(null);
+          };
+          img.src = url;
+          return;
+        }
+      }
+      // Fall back to a badge with no QR image rather than blocking the download entirely
+      buildBadgePdf(badgeQrRegistration, null);
+      setBadgeQrRegistration(null);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [badgeQrRegistration]);
 
   const fetchRegistrations = async () => {
     try {
@@ -88,6 +123,10 @@ const UserDashboard = () => {
   };
 
   const generateBadge = (registration: any) => {
+    setBadgeQrRegistration(registration);
+  };
+
+  const buildBadgePdf = (registration: any, qrDataUrl: string | null) => {
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -130,19 +169,17 @@ const UserDashboard = () => {
     doc.text(format(new Date(registration.event.startAt), 'PPP p'), 30, 72);
 
     // QR Code on the right
-    const qrCanvas = document.createElement('canvas');
-    const qrElement = document.createElement('div');
-    qrElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"></svg>`;
-    
-    // Add QR as image
     const qrSize = 35;
     const qrX = 150 - qrSize - 10;
     const qrY = 35;
-    
-    // Draw QR code placeholder (you'd need to generate actual QR image)
-    doc.setDrawColor(20, 184, 166);
-    doc.setLineWidth(0.5);
-    doc.rect(qrX, qrY, qrSize, qrSize);
+
+    if (qrDataUrl) {
+      doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+    } else {
+      doc.setDrawColor(20, 184, 166);
+      doc.setLineWidth(0.5);
+      doc.rect(qrX, qrY, qrSize, qrSize);
+    }
 
     // Footer
     doc.setFontSize(8);
@@ -459,6 +496,13 @@ const UserDashboard = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Off-screen QR render used to draw a real QR code into the downloaded badge PDF */}
+      {badgeQrRegistration && (
+        <div className="badge-qr-hidden" style={{ position: 'fixed', left: -9999, top: -9999 }}>
+          <QRCodeSVG value={badgeQrRegistration.qrToken || badgeQrRegistration.id} size={400} />
+        </div>
+      )}
     </div>
   );
 };
