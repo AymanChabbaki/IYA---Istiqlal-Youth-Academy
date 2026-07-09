@@ -118,7 +118,7 @@ export const Navbar = () => {
         <div className="container mx-auto px-4">
           <div className="relative flex items-center justify-between h-[4.5rem]">
           {/* Mobile-only: Follow us / anthem / theme, centered */}
-          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 lg:hidden">
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:hidden">
             <SocialFollow />
             <AnthemPlayer />
             <ThemeToggle />
